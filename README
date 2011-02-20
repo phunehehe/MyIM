@@ -1,0 +1,16 @@
+What is this?
+An IM server that allows users to telnet to it and chit chat with other users.
+
+Why am I writing this?
+I want to practice network programming in C. Maybe if I opensource this project it will become useful to somebody. Maybe not, but I will have source control and offsite backups :)
+
+Why C?
+I like Python, but C seems to be low level so it should have better efficiency. Furthermore programming C is a good way to get used to Linux/Unix system calls (sorry Windows users I don't plan to support it).
+
+What can MyIM do?
+When finished these features should be suported:
+ - Connect to the server
+ - Get a list of chat rooms
+ - Join a chat room
+ - Send and receive messages
+ - Leave the chat room
