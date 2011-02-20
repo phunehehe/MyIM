@@ -61,10 +61,13 @@ int main(void) {
 
     for (servinfo = res; servinfo != NULL; servinfo = servinfo->ai_next) {
 
-        listener = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+        listener = socket(servinfo->ai_family,
+                          servinfo->ai_socktype,
+                          servinfo->ai_protocol);
 
         if (listener != -1) { 
 
+            // lose the pesky "address already in use" error message
             setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 
             if (bind(listener, servinfo->ai_addr, servinfo->ai_addrlen) != -1) {
