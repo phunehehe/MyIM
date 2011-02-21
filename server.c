@@ -38,19 +38,22 @@
 #include <netdb.h>
 
 
+const char *PORT = "3490";
+
+
 // get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
+void *get_in_addr(struct sockaddr *sa) {
+
     if (sa->sa_family == AF_INET) {
         return &(((struct sockaddr_in*)sa)->sin_addr);
     }
-
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
 
 int main(void) {
 
+    // Prepare hints for getaddrinfo()
     struct addrinfo hints;
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -59,8 +62,7 @@ int main(void) {
 
     int status;
     struct addrinfo *res;
-
-    if ((status = getaddrinfo(NULL, "3490", &hints, &res)) != 0) {
+    if ((status = getaddrinfo(NULL, PORT, &hints, &res)) != 0) {
         fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
         exit(1);
     }
@@ -101,16 +103,15 @@ int main(void) {
     }
 
     fd_set master;    // master file descriptor list
-    fd_set read_fds;  // temp file descriptor list for select()
     FD_ZERO(&master);    // clear the master and temp sets
-    FD_ZERO(&read_fds);
-    int fdmax;        // maximum file descriptor number
     // add the listener to the master set
     FD_SET(listener, &master);
 
+    int fdmax;        // maximum file descriptor number
     // keep track of the biggest file descriptor
     fdmax = listener; // so far, it's this one
 
+    fd_set read_fds;  // temp file descriptor list for select()
     // main loop
     for(;;) {
         read_fds = master; // copy it
