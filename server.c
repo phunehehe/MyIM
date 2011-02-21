@@ -53,7 +53,9 @@ void *get_in_addr(struct sockaddr *sa) {
 
 int main(void) {
 
-    // Prepare hints for getaddrinfo()
+
+    // Get the information needed to establish a connection
+
     struct addrinfo hints;
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -62,14 +64,20 @@ int main(void) {
 
     int status;
     struct addrinfo *res;
+
     if ((status = getaddrinfo(NULL, PORT, &hints, &res)) != 0) {
         fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
         exit(1);
     }
 
+
+    // Create and bind a socket
+
+    // Iterate the addrinfo linked list to find one that works
+
+    struct addrinfo *servinfo;
     int listener;
     int yes = 1;
-    struct addrinfo *servinfo;
 
     for (servinfo = res; servinfo != NULL; servinfo = servinfo->ai_next) {
 
@@ -77,26 +85,32 @@ int main(void) {
                 servinfo->ai_socktype,
                 servinfo->ai_protocol);
 
-        if (listener != -1) { 
+        if (listener == -1) { 
+            perror("socket");
+        } else {
 
-            // lose the pesky "address already in use" error message
+            // Avoid the "Address already in use" error message
             setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 
-            if (bind(listener, servinfo->ai_addr, servinfo->ai_addrlen) != -1) {
-                break;
-            } else {
+            if (bind(listener, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
+                perror("bind");
                 close(listener);
+            } else {
+                break;
             }
         }
     }
 
+    // The loop exhausted, which means we don't have a connection
     if (servinfo == NULL) {
-        fprintf(stderr, "selectserver: failed to bind\n");
+        fprintf(stderr, "main: Cannot create and bind socket\n");
         exit(2);
     }
 
     freeaddrinfo(res);
 
+
+    // Connection established, now go on listening
     if (listen(listener, 10) == -1) {
         perror("listen");
         exit(3);
